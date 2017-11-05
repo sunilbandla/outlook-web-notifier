@@ -20,6 +20,12 @@
   </header>
 
   <main>
+    <button id="SignIn"
+      class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+      onclick="signIn()">
+      Sign In
+    </button>
+    <h4 id="WelcomeMessage"></h4>
     <p>Welcome to the push messaging codelab. The button below needs to be
     fixed to support subscribing to push.</p>
     <p>
@@ -39,8 +45,9 @@
     </section>
   </main>
 
+  <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.12/js/adal.min.js"></script>
   <script src="scripts/main.js"></script>
+  <script src="scripts/auth.js"></script>
 
-  <script src="https://code.getmdl.io/1.2.1/material.min.js"></script>
 </body>
 </html>
