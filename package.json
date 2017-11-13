@@ -1,7 +1,7 @@
 {
-  "name": "push-notifications",
-  "version": "1.0.0",
-  "description": "Push notifications codelab.",
+  "name": "outlook-web-notifier",
+  "version": "0.1.0",
+  "description": "Outlook notifications on the web",
   "scripts": {
     "lint": "eslint \".\"",
     "test": "npm run lint"
@@ -12,12 +12,9 @@
     "http-server": "^0.10.0"
   },
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GoogleChrome/push-notifications.git"
   },
   "license": "Apache 2",
   "bugs": {
-    "url": "https://github.com/GoogleChrome/push-notifications/issues"
   },
-  "homepage": "https://github.com/GoogleChrome/push-notifications#readme"
+  "homepage": ""
 }
