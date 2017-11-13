@@ -22,6 +22,7 @@ function userSignedIn(err, token) {
   if (!err) {
     console.log('token: ' + token);
     showWelcomeMessage();
+    sendSubscriptionRequestToGraph();
   }
   else {
     console.error('error: ' + err);
