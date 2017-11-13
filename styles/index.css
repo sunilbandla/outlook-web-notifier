@@ -2,7 +2,8 @@ html {
   height: 100%;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   padding: 0;
   margin: 0;
@@ -19,7 +20,8 @@ header {
   color: white;
 }
 
-main, header > h1 {
+main,
+header>h1 {
   padding: 0 16px;
   max-width: 760px;
   box-sizing: border-box;
@@ -32,8 +34,8 @@ main {
 }
 
 .content-container {
-    margin: 30px;
-    text-align: center;
+  margin: 30px;
+  text-align: center;
 }
 
 pre {
@@ -55,7 +57,7 @@ pre code {
 }
 
 @media (max-width: 600px) {
-  header > h1 {
+  header>h1 {
     font-size: 36px;
   }
 }
