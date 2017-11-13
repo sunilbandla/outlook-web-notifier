@@ -11,10 +11,8 @@
     "eslint-config-google": "^0.7.0",
     "http-server": "^0.10.0"
   },
-  "repository": {
-  },
+  "repository": {},
   "license": "Apache 2",
-  "bugs": {
-  },
+  "bugs": {},
   "homepage": ""
 }

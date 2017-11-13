@@ -28,21 +28,21 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
   console.log('Service Worker and Push is supported');
 
   navigator.serviceWorker.register('sw.js')
-  .then(function(swReg) {
-    console.log('Service Worker is registered', swReg);
+    .then(function (swReg) {
+      console.log('Service Worker is registered', swReg);
 
-    swRegistration = swReg;
-  })
-  .catch(function(error) {
-    console.error('Service Worker Error', error);
-  });
+      swRegistration = swReg;
+    })
+    .catch(function (error) {
+      console.error('Service Worker Error', error);
+    });
 } else {
   console.warn('Push messaging is not supported');
   pushButton.textContent = 'Push Not Supported';
 }
 
 function initializeUI() {
-  pushButton.addEventListener('click', function() {
+  pushButton.addEventListener('click', function () {
     pushButton.disabled = true;
     if (isSubscribed) {
       unsubscribeUser();
@@ -53,19 +53,19 @@ function initializeUI() {
 
   // Set the initial subscription value
   swRegistration.pushManager.getSubscription()
-  .then(function(subscription) {
-    isSubscribed = !(subscription === null);
+    .then(function (subscription) {
+      isSubscribed = !(subscription === null);
 
-    updateSubscriptionOnServer(subscription);
+      updateSubscriptionOnServer(subscription);
 
-    if (isSubscribed) {
-      console.log('User IS subscribed.');
-    } else {
-      console.log('User is NOT subscribed.');
-    }
+      if (isSubscribed) {
+        console.log('User IS subscribed.');
+      } else {
+        console.log('User is NOT subscribed.');
+      }
 
-    updateBtn();
-  });
+      updateBtn();
+    });
 }
 
 function updateBtn() {
@@ -86,32 +86,32 @@ function updateBtn() {
 }
 
 navigator.serviceWorker.register('sw.js')
-.then(function(swReg) {
-  console.log('Service Worker is registered', swReg);
+  .then(function (swReg) {
+    console.log('Service Worker is registered', swReg);
 
-  swRegistration = swReg;
-  initializeUI();
-});
+    swRegistration = swReg;
+    initializeUI();
+  });
 
 function subscribeUser() {
   const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
   swRegistration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: applicationServerKey
-  })
-  .then(function(subscription) {
-    console.log('User is subscribed.');
+      userVisibleOnly: true,
+      applicationServerKey: applicationServerKey
+    })
+    .then(function (subscription) {
+      console.log('User is subscribed.');
 
-    updateSubscriptionOnServer(subscription);
+      updateSubscriptionOnServer(subscription);
 
-    isSubscribed = true;
+      isSubscribed = true;
 
-    updateBtn();
-  })
-  .catch(function(err) {
-    console.log('Failed to subscribe the user: ', err);
-    updateBtn();
-  });
+      updateBtn();
+    })
+    .catch(function (err) {
+      console.log('Failed to subscribe the user: ', err);
+      updateBtn();
+    });
 }
 
 function updateSubscriptionOnServer(subscription) {
@@ -131,21 +131,21 @@ function updateSubscriptionOnServer(subscription) {
 
 function unsubscribeUser() {
   swRegistration.pushManager.getSubscription()
-  .then(function(subscription) {
-    if (subscription) {
-          // TODO: Tell application server to delete subscription
-      return subscription.unsubscribe();
-    }
-  })
-  .catch(function(error) {
-    console.log('Error unsubscribing', error);
-  })
-  .then(function() {
-    updateSubscriptionOnServer(null);
+    .then(function (subscription) {
+      if (subscription) {
+        // TODO: Tell application server to delete subscription
+        return subscription.unsubscribe();
+      }
+    })
+    .catch(function (error) {
+      console.log('Error unsubscribing', error);
+    })
+    .then(function () {
+      updateSubscriptionOnServer(null);
 
-    console.log('User is unsubscribed.');
-    isSubscribed = false;
+      console.log('User is unsubscribed.');
+      isSubscribed = false;
 
-    updateBtn();
-  });
+      updateBtn();
+    });
 }
