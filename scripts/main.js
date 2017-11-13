@@ -3,7 +3,7 @@
 'use strict';
 
 const applicationServerPublicKey = 'BHo2OFe7AOLXvMTfGdXqfuBKkA50qHUrsycyzuqGhaM5l3HUeT2n_1hugnJyWr6dWQEE7jT40eV16WgYf8-omRE';
-
+const PUSH_SUBSCRIPTION_KEY = "pushSubscription";
 const pushButton = document.querySelector('.js-push-btn');
 
 let isSubscribed = false;
@@ -32,6 +32,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
       console.log('Service Worker is registered', swReg);
 
       swRegistration = swReg;
+      initializeUI();
     })
     .catch(function (error) {
       console.error('Service Worker Error', error);
@@ -85,14 +86,6 @@ function updateBtn() {
   pushButton.disabled = false;
 }
 
-navigator.serviceWorker.register('sw.js')
-  .then(function (swReg) {
-    console.log('Service Worker is registered', swReg);
-
-    swRegistration = swReg;
-    initializeUI();
-  });
-
 function subscribeUser() {
   const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
   swRegistration.pushManager.subscribe({
@@ -107,6 +100,9 @@ function subscribeUser() {
       isSubscribed = true;
 
       updateBtn();
+
+      // TODO sign in auto after notifications are enabled
+      // signIn();
     })
     .catch(function (err) {
       console.log('Failed to subscribe the user: ', err);
@@ -124,7 +120,9 @@ function updateSubscriptionOnServer(subscription) {
   if (subscription) {
     subscriptionJson.textContent = JSON.stringify(subscription);
     subscriptionDetails.classList.remove('is-invisible');
+    localStorage.setItem(PUSH_SUBSCRIPTION_KEY, JSON.stringify(subscription));
   } else {
+    localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
     subscriptionDetails.classList.add('is-invisible');
   }
 }
