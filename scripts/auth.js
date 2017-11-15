@@ -1,3 +1,4 @@
+/* global AuthenticationContext, sendSubscriptionRequestToGraph */
 /* eslint-env browser, es6 */
 
 'use strict';
@@ -22,7 +23,7 @@ function userSignedIn(err, token) {
   if (!err) {
     console.log('token: ' + token);
     showWelcomeMessage();
-    sendSubscriptionRequestToGraph();
+    sendSubscriptionRequestToGraph(token);
   }
   else {
     console.error('error: ' + err);

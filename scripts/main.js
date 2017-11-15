@@ -1,9 +1,10 @@
+/* global renewOrRecreateGraphSubscription */
 /* eslint-env browser, es6 */
 
 'use strict';
 
 const applicationServerPublicKey = 'BHo2OFe7AOLXvMTfGdXqfuBKkA50qHUrsycyzuqGhaM5l3HUeT2n_1hugnJyWr6dWQEE7jT40eV16WgYf8-omRE';
-const PUSH_SUBSCRIPTION_KEY = "pushSubscription";
+const PUSH_SUBSCRIPTION_KEY = 'pushSubscription';
 const pushButton = document.querySelector('.js-push-btn');
 
 let isSubscribed = false;
@@ -28,13 +29,13 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
   console.log('Service Worker and Push is supported');
 
   navigator.serviceWorker.register('sw.js')
-    .then(function (swReg) {
+    .then(function(swReg) {
       console.log('Service Worker is registered', swReg);
 
       swRegistration = swReg;
       initializeUI();
     })
-    .catch(function (error) {
+    .catch(function(error) {
       console.error('Service Worker Error', error);
     });
 } else {
@@ -43,7 +44,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 }
 
 function initializeUI() {
-  pushButton.addEventListener('click', function () {
+  pushButton.addEventListener('click', function() {
     pushButton.disabled = true;
     if (isSubscribed) {
       unsubscribeUser();
@@ -54,10 +55,12 @@ function initializeUI() {
 
   // Set the initial subscription value
   swRegistration.pushManager.getSubscription()
-    .then(function (subscription) {
+    .then(function(subscription) {
       isSubscribed = !(subscription === null);
-
-      updateSubscriptionOnServer(subscription);
+      // TODO check if subscription is the same for already subscribed user
+      // Currently assuming it is same until unsubscribed
+      updatePushSubscriptionInStorage(subscription);
+      // TODO For already subscribed users, try to get token without logging in
 
       if (isSubscribed) {
         console.log('User IS subscribed.');
@@ -73,7 +76,7 @@ function updateBtn() {
   if (Notification.permission === 'denied') {
     pushButton.textContent = 'Push Messaging Blocked.';
     pushButton.disabled = true;
-    updateSubscriptionOnServer(null);
+    updatePushSubscriptionInStorage(null);
     return;
   }
 
@@ -92,10 +95,10 @@ function subscribeUser() {
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
     })
-    .then(function (subscription) {
+    .then(function(subscription) {
       console.log('User is subscribed.');
 
-      updateSubscriptionOnServer(subscription);
+      updatePushSubscriptionInStorage(subscription);
 
       isSubscribed = true;
 
@@ -104,23 +107,25 @@ function subscribeUser() {
       // TODO sign in auto after notifications are enabled
       // signIn();
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.log('Failed to subscribe the user: ', err);
       updateBtn();
     });
 }
 
-function updateSubscriptionOnServer(subscription) {
+function updatePushSubscriptionInStorage(subscription) {
   // TODO: Send subscription to application server
 
   const subscriptionJson = document.querySelector('.js-subscription-json');
   const subscriptionDetails =
     document.querySelector('.js-subscription-details');
 
+  // remove existing graph subscription from server
   if (subscription) {
     subscriptionJson.textContent = JSON.stringify(subscription);
     subscriptionDetails.classList.remove('is-invisible');
     localStorage.setItem(PUSH_SUBSCRIPTION_KEY, JSON.stringify(subscription));
+    renewOrRecreateGraphSubscription();
   } else {
     localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
     subscriptionDetails.classList.add('is-invisible');
@@ -129,17 +134,17 @@ function updateSubscriptionOnServer(subscription) {
 
 function unsubscribeUser() {
   swRegistration.pushManager.getSubscription()
-    .then(function (subscription) {
+    .then(function(subscription) {
       if (subscription) {
         // TODO: Tell application server to delete subscription
         return subscription.unsubscribe();
       }
     })
-    .catch(function (error) {
+    .catch(function(error) {
       console.log('Error unsubscribing', error);
     })
-    .then(function () {
-      updateSubscriptionOnServer(null);
+    .then(function() {
+      updatePushSubscriptionInStorage(null);
 
       console.log('User is unsubscribed.');
       isSubscribed = false;
