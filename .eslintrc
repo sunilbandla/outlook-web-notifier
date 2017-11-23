@@ -5,9 +5,13 @@
     "no-console": 0,
     "comma-dangle": 0,
     "require-jsdoc": 0,
-    "no-useless-escape": 0
+    "no-useless-escape": 0,
+    "max-len": ["error", 120]
   },
   "parserOptions": {
     "ecmaVersion": 6
+  },
+  "globals": {
+    "Msal": true
   }
 }

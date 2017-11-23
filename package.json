@@ -4,7 +4,8 @@
   "description": "Outlook notifications on the web",
   "scripts": {
     "lint": "eslint \".\"",
-    "test": "npm run lint"
+    "test": "npm run lint",
+    "start": "http-server app -o"
   },
   "devDependencies": {
     "eslint": "^3.8.1",
