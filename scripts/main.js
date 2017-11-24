@@ -1,5 +1,6 @@
-/* global renewOrRecreateGraphSubscription */
-/* eslint-env browser, es6 */
+/* global signIn, renewOrRecreateGraphSubscription, GRAPH_SUBSCRIPTION_KEY,
+  removeGraphSubscription, userAgentApplication */
+/* eslint-env browser, es7 */
 
 'use strict';
 
@@ -55,20 +56,10 @@ function initializeUI() {
 
   // Set the initial subscription value
   swRegistration.pushManager.getSubscription()
-    .then(function(subscription) {
-      isSubscribed = !(subscription === null);
-      // TODO check if subscription is the same for already subscribed user
-      // Currently assuming it is same until unsubscribed
-      updatePushSubscriptionInStorage(subscription);
-      // TODO For already subscribed users, try to get token without logging in
-
-      if (isSubscribed) {
-        console.log('User IS subscribed.');
-      } else {
-        console.log('User is NOT subscribed.');
-      }
-
-      updateBtn();
+    .then(subscriptionSuccess)
+    .catch(() => {
+      console.log('User is NOT subscribed.');
+      subscribeUser();
     });
 }
 
@@ -95,17 +86,9 @@ function subscribeUser() {
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
     })
-    .then(function(subscription) {
-      console.log('User is subscribed.');
-
-      updatePushSubscriptionInStorage(subscription);
-
-      isSubscribed = true;
-
+    .then(subscriptionSuccess, (err) => {
+      console.log('Failed to subscribe the user: ', err);
       updateBtn();
-
-      // TODO sign in auto after notifications are enabled
-      // signIn();
     })
     .catch(function(err) {
       console.log('Failed to subscribe the user: ', err);
@@ -113,14 +96,28 @@ function subscribeUser() {
     });
 }
 
-function updatePushSubscriptionInStorage(subscription) {
-  // TODO: Send subscription to application server
+function subscriptionSuccess(subscription) {
+  isSubscribed = !(subscription === null);
+  // TODO check if subscription is the same for already subscribed user
+  // Currently assuming it is same until unsubscribed
+  updatePushSubscriptionInStorage(subscription);
 
+  if (isSubscribed) {
+    console.log('User IS subscribed.');
+    signIn();
+  } else {
+    console.log('User is NOT subscribed.');
+    subscribeUser();
+  }
+
+  updateBtn();
+}
+
+function updatePushSubscriptionInStorage(subscription) {
   const subscriptionJson = document.querySelector('.js-subscription-json');
   const subscriptionDetails =
     document.querySelector('.js-subscription-details');
 
-  // remove existing graph subscription from server
   if (subscription) {
     subscriptionJson.textContent = JSON.stringify(subscription);
     subscriptionDetails.classList.remove('is-invisible');
@@ -132,11 +129,16 @@ function updatePushSubscriptionInStorage(subscription) {
   }
 }
 
+function restart() {
+  localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
+  localStorage.removeItem(GRAPH_SUBSCRIPTION_KEY);
+  removeGraphSubscription();
+}
+
 function unsubscribeUser() {
   swRegistration.pushManager.getSubscription()
     .then(function(subscription) {
       if (subscription) {
-        // TODO: Tell application server to delete subscription
         return subscription.unsubscribe();
       }
     })
@@ -145,10 +147,13 @@ function unsubscribeUser() {
     })
     .then(function() {
       updatePushSubscriptionInStorage(null);
+      removeGraphSubscription();
 
       console.log('User is unsubscribed.');
       isSubscribed = false;
 
       updateBtn();
+      // TODO
+      // signOut();
     });
 }

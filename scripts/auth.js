@@ -1,5 +1,5 @@
 /* global sendSubscriptionRequestToGraph */
-/* eslint-env browser, es6 */
+/* eslint-env browser, es7 */
 
 'use strict';
 
@@ -7,9 +7,6 @@ let msalconfig = {
   clientID: 'fac25078-e844-4720-a161-a6331ffd8119',
   redirectUri: location.origin
 };
-
-// Graph API scope used to obtain the access token to read user profile
-let graphAPIScopes = ['https://graph.microsoft.com/user.read'];
 
 // Initialize application
 let userAgentApplication = new Msal.UserAgentApplication(
@@ -39,7 +36,7 @@ window.onload = function() {
   }
 };
 
-/**
+/*
  * Call the Microsoft Graph API and display the results on the page. Sign the user in if necessary
  */
 function signIn() {
@@ -47,13 +44,8 @@ function signIn() {
   if (!user) {
     // If user is not signed in, then prompt user to sign in via loginRedirect.
     // This will redirect user to the Azure Active Directory v2 Endpoint
-    userAgentApplication
-      .loginPopup(graphAPIScopes)
-      .then(loginSuccess, function(error) {
-        if (error) {
-          showError(window.msal.authority, error);
-        }
-      });
+    return userAgentApplication
+      .loginRedirect(graphAPIScopes);
     // The call to loginRedirect above frontloads the consent to query Graph API during the sign-in.
     // If you want to use dynamic consent, just remove the graphAPIScopes from loginRedirect call.
     // As such, user will be prompted to give consent when requested access to a resource that
@@ -63,16 +55,18 @@ function signIn() {
     // TODO Show Sign-Out button
     // In order to call the Graph API, an access token needs to be acquired.
     // Try to acquire the token used to query Graph API silently first:
-    getToken();
+    return getToken();
   }
 }
 
 function getToken() {
-  userAgentApplication
+  return userAgentApplication
     .acquireTokenSilent(graphAPIScopes)
     .then(loginSuccess, function(error) {
       if (error) {
-        userAgentApplication.acquireTokenRedirect(graphAPIScopes);
+        // TODO why is user login required after login
+        // TODO signIn();
+        return;
       }
     });
 }
@@ -100,6 +94,7 @@ function loginSuccess(token) {
   showWelcomeMessage();
   // TODO
   // sendSubscriptionRequestToGraph(token);
+  return token;
 }
 
 function showWelcomeMessage() {

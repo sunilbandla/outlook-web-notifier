@@ -1,4 +1,4 @@
-/* eslint-env browser, serviceworker, es6 */
+/* eslint-env browser, serviceworker, es7 */
 
 'use strict';
 self.addEventListener('push', function (event) {
