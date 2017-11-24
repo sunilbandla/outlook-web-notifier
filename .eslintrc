@@ -9,9 +9,10 @@
     "max-len": ["error", 120]
   },
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 8
   },
   "globals": {
-    "Msal": true
+    "Msal": true,
+    "graphAPIScopes": true
   }
 }
