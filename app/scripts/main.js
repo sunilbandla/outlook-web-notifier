@@ -1,6 +1,6 @@
 /* global signIn, resetLoginCount, renewOrRecreateGraphSubscription, GRAPH_SUBSCRIPTION_KEY,
-  removeGraphSubscription, userAgentApplication */
-/* eslint-env browser, es7 */
+  removeGraphSubscription, userAgentApplication, getMailInfo */
+/* eslint-env browser, es8 */
 
 'use strict';
 
@@ -43,6 +43,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 
       swRegistration = swReg;
       initializeUI();
+      registerMessageHandler();
     })
     .catch(function(error) {
       console.error('Service Worker registration error.', error);
@@ -60,6 +61,24 @@ function enableNotificationsClickHandler() {
   } else {
     subscribeUser();
   }
+}
+
+function registerMessageHandler() {
+  const swListener = new BroadcastChannel('swListener');
+  swListener.onmessage = async (event) => {
+    console.log('Main thread received message', event, event.data);
+    if (event && event.data && event.data.method === 'getMailInfo') {
+      let mailInfo = await getMailInfo(event.data.id);
+      let data = Object.assign({}, event.data);
+      data.mailInfo = mailInfo;
+      sendMessageToServiceWorker(data);
+    }
+  };
+}
+
+function sendMessageToServiceWorker(msg) {
+  console.log('sendMessageToServiceWorker', msg);
+  navigator.serviceWorker.controller.postMessage(msg);
 }
 
 function initializeUI() {
@@ -130,18 +149,12 @@ function subscriptionSuccess(subscription) {
 
 function updatePushSubscriptionInStorage(subscription) {
   console.log('updatePushSubscriptionInStorage');
-  const subscriptionJson = document.querySelector('.js-subscription-json');
-  const subscriptionDetails =
-    document.querySelector('.js-subscription-details');
 
   if (subscription) {
-    subscriptionJson.textContent = JSON.stringify(subscription);
-    subscriptionDetails.classList.remove('is-invisible');
     localStorage.setItem(PUSH_SUBSCRIPTION_KEY, JSON.stringify(subscription));
     renewOrRecreateGraphSubscription();
   } else {
     localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
-    subscriptionDetails.classList.add('is-invisible');
   }
 }
 

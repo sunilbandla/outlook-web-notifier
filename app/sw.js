@@ -1,19 +1,47 @@
-/* eslint-env browser, serviceworker, es7 */
+/* eslint-env browser, serviceworker, es8 */
 
 'use strict';
-self.addEventListener('push', function (event) {
-  console.log(`[Service Worker] Push received with this data: "${event.data.text()}"`);
+self.addEventListener('push', async (event) => {
+  console.log(
+    `[Service Worker] Push received with this data: "${event.data.text()}"`
+  );
 
-  const title = 'Outlook web notification';
+  if (event.data) {
+    let data = event.data.json();
+    if (data['@odata.type'].indexOf('Message') !== -1) {
+      let mailId = data.id;
+      const swListener = new BroadcastChannel('swListener');
+      swListener.postMessage({
+        method: 'getMailInfo',
+        id: mailId
+      });
+    }
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+});
+
+self.addEventListener('message', async (event) => {
+  console.log('SW received message: ', event.data);
+
+  let message = 'You\'ve got mail.';
+  let subject = 'Outlook web notification';
+
+  if (event.data.method.indexOf('getMailInfo') !== -1) {
+    let mailInfo = event.data.mailInfo;
+    if (mailInfo) {
+      subject = mailInfo.subject;
+      message = mailInfo.bodyPreview;
+    }
+  }
+  const title = subject;
   const options = {
-    body: event.data.text(),
+    body: message,
     icon: 'images/icon.png',
     badge: 'images/badge.png'
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', function (event) {
-  event.notification.close();
 });

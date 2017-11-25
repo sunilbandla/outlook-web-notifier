@@ -3,9 +3,9 @@
 
 'use strict';
 
-const GRAPH_URL = 'https://graph.microsoft.com/beta/subscriptions/';
+const GRAPH_ROOT_URL = 'https://graph.microsoft.com/beta';
+const GRAPH_URL = `${GRAPH_ROOT_URL}/subscriptions/`;
 const NOTIFIER_API_URL = 'https://outlookwebnotifier.azurewebsites.net/api/subscribe';
-// Graph API scope used to obtain the access token to read user profile
 const graphAPIScopes = [
   'https://graph.microsoft.com/user.read',
   'https://graph.microsoft.com/mail.read'
@@ -170,6 +170,7 @@ async function renewGraphSubscription() {
         JSON.stringify(graphSub)
       );
       console.log(graphSub);
+      sendSubscriptionInfoToNotifierService(graphSub, null);
       setupGraphSubReminder();
     })
     .catch((error) => {
@@ -197,6 +198,10 @@ function showErrorMessage(text) {
 
 function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
   console.log('sendSubscriptionInfoToNotifierService');
+  if (!pushSub) {
+    pushSub = localStorage.getItem(PUSH_SUBSCRIPTION_KEY);
+    pushSub = JSON.parse(pushSub);
+  }
   let data = {};
   data.pushSubscription = pushSub;
   data.id = graphSub.id;
@@ -214,9 +219,40 @@ function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
   fetch(NOTIFIER_API_URL, request)
     .then((response) => {
       if (response.ok) {
+        showSubscriptionMessage('You are now subscribed to notifications for new messages in your Inbox.');
         return console.log('Subscriptions sent to server - response status =', response.status);
       }
       throw new Error('Subscriptions could not be saved on server.');
+    })
+    .catch((error) => {
+      console.warn(error);
+    });
+}
+
+async function getMailInfo(id) {
+  console.log('getMailInfo');
+  let token = await getAuthToken();
+  if (!token) {
+    return;
+  }
+  let myHeaders = getDefaultHeaders();
+  myHeaders.append('Authorization', `Bearer ${token}`);
+
+  let request = {
+    method: 'GET',
+    headers: myHeaders
+  };
+  let url = `${GRAPH_ROOT_URL}/me/messages/${id}`;
+
+  return fetch(url, request)
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Could not fetch mail info from Graph.');
+    })
+    .then((mail) => {
+      return mail;
     })
     .catch((error) => {
       console.warn(error);
@@ -245,4 +281,9 @@ function getNewExpirationTime() {
   expirationDateTime.setHours(expirationDateTime.getHours() + SUBSCRIPTION_EXP_HOURS);
   expirationDateTime = expirationDateTime.toISOString();
   return expirationDateTime;
+}
+
+function showSubscriptionMessage(message) {
+  let elem = document.getElementById('SubscriptionMessage');
+  elem.innerText = message;
 }
