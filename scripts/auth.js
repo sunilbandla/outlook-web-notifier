@@ -56,7 +56,6 @@ function signIn() {
     // he/she hasn't consented before. In the case of this application -
     // the first time the Graph API call to obtain user's profile is executed.
   } else {
-    // TODO Show Sign-Out button
     // In order to call the Graph API, an access token needs to be acquired.
     // Try to acquire the token used to query Graph API silently first:
     return getToken();
@@ -102,8 +101,6 @@ function loginSuccess(token) {
   resetLoginCount();
   hideError();
   showWelcomeMessage();
-  // TODO
-  // sendSubscriptionRequestToGraph(token);
   return token;
 }
 
