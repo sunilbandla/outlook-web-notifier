@@ -1,4 +1,4 @@
-/* global signIn, getToken, PUSH_SUBSCRIPTION_KEY */
+/* global getToken, PUSH_SUBSCRIPTION_KEY */
 /* eslint-env browser, es7 */
 
 'use strict';
@@ -19,9 +19,12 @@ let inboxSubscriptionRequest = {
   clientState: ''
 };
 const GRAPH_SUBSCRIPTION_KEY = 'graphSubscription';
-const SUBSCRIPTION_EXP_DAYS = 3;
+const SUBSCRIPTION_EXP_HOURS = 70;
+let graphRenewalReminder;
+let graphSubscriptionRequestCount = 1;
 
 async function sendSubscriptionRequestToGraph() {
+  console.log('sendSubscriptionRequestToGraph');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (graphSub) {
     renewOrRecreateGraphSubscription();
@@ -35,10 +38,8 @@ async function sendSubscriptionRequestToGraph() {
   myHeaders.append('Authorization', `Bearer ${token}`);
 
   let data = Object.assign({}, inboxSubscriptionRequest);
-  data.clientState = Date.now();
-  let expirationDateTime = new Date();
-  expirationDateTime.setDate(expirationDateTime.getDate() + SUBSCRIPTION_EXP_DAYS);
-  data.expirationDateTime = expirationDateTime.toUTCString();
+  data.clientState = Date.now().toString();
+  data.expirationDateTime = getNewExpirationTime();
 
   let request = {
     method: 'POST',
@@ -46,14 +47,26 @@ async function sendSubscriptionRequestToGraph() {
     body: JSON.stringify(data)
   };
 
+  graphSubscriptionRequestCount++;
   fetch(GRAPH_URL, request)
-    .then((response) => {
+    .then(async (response) => {
       if (response.ok) {
         return response.json();
+      } else if (response.status === 400) {
+        let json = await response.json();
+        if (json.error.message === 'Subscription validation request timed out.' &&
+          graphSubscriptionRequestCount <= 2) {
+          sendSubscriptionRequestToGraph();
+          return;
+        }
       }
       throw new Error('Could not subscribe to notifications. Reload to try again.');
     })
     .then((subscription) => {
+      if (!subscription) {
+        return;
+      }
+      graphSubscriptionRequestCount = 0;
       console.log(subscription);
       localStorage.setItem(
         GRAPH_SUBSCRIPTION_KEY,
@@ -68,6 +81,7 @@ async function sendSubscriptionRequestToGraph() {
       subscription[PUSH_SUBSCRIPTION_KEY] = pushSub;
       console.log(pushSub);
       sendSubscriptionInfoToNotifierService(subscription, pushSub);
+      setupGraphSubReminder();
     })
     .catch((error) => {
       console.warn(error);
@@ -75,6 +89,7 @@ async function sendSubscriptionRequestToGraph() {
 }
 
 function renewOrRecreateGraphSubscription() {
+  console.log('renewOrRecreateGraphSubscription');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (!graphSub) {
     sendSubscriptionRequestToGraph();
@@ -91,8 +106,13 @@ function renewOrRecreateGraphSubscription() {
 }
 
 function removeGraphSubscription() {
+  console.log('removeGraphSubscription');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (!graphSub) {
+    return;
+  }
+  graphSub = JSON.parse(graphSub);
+  if (!graphSub || !graphSub.id) {
     return;
   }
   let request = {
@@ -103,10 +123,10 @@ function removeGraphSubscription() {
   fetch(`${NOTIFIER_API_URL}/${graphSub.id}`, request)
     .then((response) => {
       if (response.ok) {
-        console.log('Subscriptions sent to server - response status =', response.status);
+        console.log('Subscriptions sent to notifier server - response status =', response.status);
         return localStorage.removeItem(GRAPH_SUBSCRIPTION_KEY);
       }
-      throw new Error('Could not remove Graph subscription from server');
+      throw new Error('Could not remove Graph subscription from notifier server');
     })
     .catch((error) => {
       console.warn(error);
@@ -114,6 +134,7 @@ function removeGraphSubscription() {
 }
 
 async function renewGraphSubscription() {
+  console.log('renewGraphSubscription');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   graphSub = JSON.parse(graphSub);
 
@@ -124,11 +145,15 @@ async function renewGraphSubscription() {
   let myHeaders = getDefaultHeaders();
   myHeaders.append('Authorization', `Bearer ${token}`);
 
+  let data = {};
+  data.expirationDateTime = getNewExpirationTime();
+
   let request = {
     method: 'PATCH',
-    headers: myHeaders
+    headers: myHeaders,
+    body: JSON.stringify(data)
   };
-  let url = `${GRAPH_URL}/${graphSub.id}`;
+  let url = `${GRAPH_URL}${graphSub.id}`;
 
   fetch(url, request)
     .then((response) => {
@@ -145,6 +170,7 @@ async function renewGraphSubscription() {
         JSON.stringify(graphSub)
       );
       console.log(graphSub);
+      setupGraphSubReminder();
     })
     .catch((error) => {
       console.warn(error);
@@ -152,10 +178,10 @@ async function renewGraphSubscription() {
 }
 
 async function getAuthToken() {
+  console.log('getAuthToken');
   let token = await getToken();
   if (!token) {
     showErrorMessage('Authentication error. Reload and/or try again later.');
-    // signIn();
     return;
   }
   return token;
@@ -170,6 +196,7 @@ function showErrorMessage(text) {
 }
 
 function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
+  console.log('sendSubscriptionInfoToNotifierService');
   let data = {};
   data.pushSubscription = pushSub;
   data.id = graphSub.id;
@@ -196,8 +223,26 @@ function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
     });
 }
 
+function setupGraphSubReminder() {
+  console.log('setupGraphSubReminder');
+  if (graphRenewalReminder) {
+    clearTimeout(graphRenewalReminder);
+  }
+  let delay = 2 * 24 * 60 * 60 * 1000;
+  graphRenewalReminder = setTimeout(() => {
+    renewGraphSubscription();
+  }, delay);
+}
+
 function getDefaultHeaders() {
   let myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   return myHeaders;
+}
+
+function getNewExpirationTime() {
+  let expirationDateTime = new Date();
+  expirationDateTime.setHours(expirationDateTime.getHours() + SUBSCRIPTION_EXP_HOURS);
+  expirationDateTime = expirationDateTime.toISOString();
+  return expirationDateTime;
 }
