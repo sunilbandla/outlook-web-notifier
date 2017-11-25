@@ -1,4 +1,4 @@
-/* global signIn, renewOrRecreateGraphSubscription, GRAPH_SUBSCRIPTION_KEY,
+/* global signIn, resetLoginCount, renewOrRecreateGraphSubscription, GRAPH_SUBSCRIPTION_KEY,
   removeGraphSubscription, userAgentApplication */
 /* eslint-env browser, es7 */
 
@@ -26,7 +26,15 @@ function urlB64ToUint8Array(base64String) {
   return outputArray;
 }
 
+(function() {
 if ('serviceWorker' in navigator && 'PushManager' in window) {
+  if (
+    window.parent !== window &&
+    window.opener
+  ) {
+    console.log('In auth frame');
+    return;
+  }
   console.log('Service Worker and Push is supported');
 
   navigator.serviceWorker.register('sw.js')
@@ -37,28 +45,31 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
       initializeUI();
     })
     .catch(function(error) {
-      console.error('Service Worker Error', error);
+      console.error('Service Worker registration error.', error);
     });
 } else {
   console.warn('Push messaging is not supported');
   pushButton.textContent = 'Push Not Supported';
 }
+})();
+
+function enableNotificationsClickHandler() {
+  pushButton.disabled = true;
+  if (isSubscribed) {
+    unsubscribeUser();
+  } else {
+    subscribeUser();
+  }
+}
 
 function initializeUI() {
-  pushButton.addEventListener('click', function() {
-    pushButton.disabled = true;
-    if (isSubscribed) {
-      unsubscribeUser();
-    } else {
-      subscribeUser();
-    }
-  });
+  pushButton.addEventListener('click', enableNotificationsClickHandler);
 
   // Set the initial subscription value
   swRegistration.pushManager.getSubscription()
     .then(subscriptionSuccess)
     .catch(() => {
-      console.log('User is NOT subscribed.');
+      console.log('Could not obtain push subscription. Reload or open app in a new tab.');
       subscribeUser();
     });
 }
@@ -81,12 +92,16 @@ function updateBtn() {
 }
 
 function subscribeUser() {
+  console.log('subscribeUser');
   const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
   swRegistration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
     })
-    .then(subscriptionSuccess, (err) => {
+    .then((subscription) => {
+      signIn();
+      subscriptionSuccess(subscription);
+    }, (err) => {
       console.log('Failed to subscribe the user: ', err);
       updateBtn();
     })
@@ -97,23 +112,24 @@ function subscribeUser() {
 }
 
 function subscriptionSuccess(subscription) {
+  console.log('subscriptionSuccess', subscription);
+
   isSubscribed = !(subscription === null);
-  // TODO check if subscription is the same for already subscribed user
-  // Currently assuming it is same until unsubscribed
-  updatePushSubscriptionInStorage(subscription);
 
   if (isSubscribed) {
     console.log('User IS subscribed.');
-    signIn();
   } else {
     console.log('User is NOT subscribed.');
-    subscribeUser();
   }
 
   updateBtn();
+  // TODO check if subscription is the same for already subscribed user
+  // Currently assuming it is same until unsubscribed
+  updatePushSubscriptionInStorage(subscription);
 }
 
 function updatePushSubscriptionInStorage(subscription) {
+  console.log('updatePushSubscriptionInStorage');
   const subscriptionJson = document.querySelector('.js-subscription-json');
   const subscriptionDetails =
     document.querySelector('.js-subscription-details');
@@ -130,9 +146,12 @@ function updatePushSubscriptionInStorage(subscription) {
 }
 
 function restart() {
+  removeGraphSubscription();
   localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
   localStorage.removeItem(GRAPH_SUBSCRIPTION_KEY);
-  removeGraphSubscription();
+  unsubscribeUser();
+  updateBtn();
+  resetLoginCount();
 }
 
 function unsubscribeUser() {

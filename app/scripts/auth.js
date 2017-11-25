@@ -3,6 +3,7 @@
 
 'use strict';
 
+let LOGIN_COUNT_KEY = 'loginCount';
 let msalconfig = {
   clientID: 'fac25078-e844-4720-a161-a6331ffd8119',
   redirectUri: location.origin
@@ -31,6 +32,7 @@ window.onload = function() {
   ) {
     let user = userAgentApplication.getUser();
     if (user) {
+      console.log('onload');
       getToken();
     }
   }
@@ -40,10 +42,12 @@ window.onload = function() {
  * Call the Microsoft Graph API and display the results on the page. Sign the user in if necessary
  */
 function signIn() {
+  console.log('signIn');
   let user = userAgentApplication.getUser();
   if (!user) {
     // If user is not signed in, then prompt user to sign in via loginRedirect.
     // This will redirect user to the Azure Active Directory v2 Endpoint
+    trackLoginCount();
     return userAgentApplication
       .loginRedirect(graphAPIScopes);
     // The call to loginRedirect above frontloads the consent to query Graph API during the sign-in.
@@ -60,12 +64,16 @@ function signIn() {
 }
 
 function getToken() {
+  console.log('getToken');
   return userAgentApplication
     .acquireTokenSilent(graphAPIScopes)
-    .then(loginSuccess, function(error) {
+    .then(loginSuccess, (error) => {
+      console.log('acquireTokenSilent failed', error);
       if (error) {
-        // TODO why is user login required after login
-        // TODO signIn();
+        let count = Number.parseInt(localStorage.getItem(LOGIN_COUNT_KEY) || 0);
+        if (count === 0) {
+          signIn();
+        }
         return;
       }
     });
@@ -80,6 +88,7 @@ function getToken() {
  *  For acquireTokenRedirect, tokenType:"access_token".
  */
 function loginCallback(errorDesc, token, error, tokenType) {
+  console.log('loginCallback');
   if (errorDesc) {
     console.error('error: ' + errorDesc);
     showError(window.msal.authority, error, errorDesc);
@@ -89,7 +98,8 @@ function loginCallback(errorDesc, token, error, tokenType) {
 }
 
 function loginSuccess(token) {
-  console.log('token: ' + token);
+  console.log('loginSuccess', token);
+  resetLoginCount();
   hideError();
   showWelcomeMessage();
   // TODO
@@ -139,4 +149,16 @@ function showError(endpoint, error, errorDesc) {
  */
 function signOut() {
   userAgentApplication.logout();
+}
+
+function trackLoginCount() {
+  let count = localStorage.getItem(LOGIN_COUNT_KEY);
+  if (count === null || count === undefined) {
+    count = 0;
+  }
+  localStorage.setItem(LOGIN_COUNT_KEY, ++count);
+}
+
+function resetLoginCount() {
+  localStorage.setItem(LOGIN_COUNT_KEY, 0);
 }
