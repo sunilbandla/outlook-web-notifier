@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Outlook Web Notifier</title>
+  <title>Inbox Notifier</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.indigo-pink.min.css">
@@ -18,18 +18,30 @@
 <body>
 
   <header>
-    <h1>Outlook Web Notifier</h1>
+    <h1>Inbox Notifier</h1>
+    <strong id="WelcomeMessage"></strong>
   </header>
 
   <main>
     <section class="content-container">
+      <br />
       <button disabled class="js-push-btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
         Enable Notifications
       </button>
       <br />
-      <h3 id="WelcomeMessage" class="mdl-typography--display-2"></h3>
-      <br />
-      <h4 id="SubscriptionMessage" class="mdl-typography--display-1"></h4>
+      <ul id="SubscriptionMessage" class="mdl-list is-invisible">
+        <h4>You are now subscribed to:</h4>
+        <li class="mdl-list__item">
+          <span class="mdl-list__item-primary-content">
+            New mails in Inbox
+          </span>
+          <span class="mdl-list__item-secondary-action">
+            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="list-checkbox-1">
+              <input type="checkbox" id="list-checkbox-1" class="mdl-checkbox__input" checked disabled />
+            </label>
+          </span>
+        </li>
+      </ul>
       <br />
       <div id="ErrorMessage" class="mdl-color-text--red"></div>
       <br />

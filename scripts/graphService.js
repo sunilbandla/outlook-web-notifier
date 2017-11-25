@@ -232,7 +232,7 @@ async function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
   fetch(NOTIFIER_API_URL, request)
     .then((response) => {
       if (response.ok) {
-        showSubscriptionMessage('You are now subscribed to notifications for new messages in your Inbox.');
+        subscriptionComplete('SubscriptionMessage');
         return console.log('Subscriptions sent to server - response status =', response.status);
       }
       throw new Error('Subscriptions could not be saved on server.');
@@ -296,7 +296,6 @@ function getNewExpirationTime() {
   return expirationDateTime;
 }
 
-function showSubscriptionMessage(message) {
-  let elem = document.getElementById('SubscriptionMessage');
-  elem.innerText = message;
+function subscriptionComplete(id) {
+  document.getElementById(id).classList.toggle('is-invisible');
 }

@@ -29,6 +29,11 @@ header>h1 {
   margin: 0 auto;
 }
 
+#SubscriptionMessage {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
 main {
   margin: 24px auto;
   box-sizing: border-box;
@@ -37,16 +42,6 @@ main {
 .content-container {
   margin: 30px;
   text-align: center;
-}
-
-pre {
-  white-space: pre-wrap;
-  background-color: #EEEEEE;
-  padding: 16px;
-}
-
-pre code {
-  word-break: break-word;
 }
 
 .is-invisible {

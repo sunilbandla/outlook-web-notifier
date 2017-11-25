@@ -110,7 +110,7 @@ function showWelcomeMessage() {
     return;
   }
   let divWelcome = document.getElementById('WelcomeMessage');
-  divWelcome.innerHTML = 'Welcome ' + user.name;
+  divWelcome.innerHTML = 'Hello ' + user.name;
 }
 
 function hideError() {
