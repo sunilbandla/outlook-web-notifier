@@ -105,7 +105,7 @@ function renewOrRecreateGraphSubscription() {
   }
 }
 
-function removeGraphSubscription() {
+async function removeGraphSubscription() {
   console.log('removeGraphSubscription');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (!graphSub) {
@@ -115,9 +115,15 @@ function removeGraphSubscription() {
   if (!graphSub || !graphSub.id) {
     return;
   }
+  let token = await getAuthToken();
+  if (!token) {
+    return;
+  }
+  let myHeaders = getDefaultHeaders();
+  myHeaders.append('Authorization', `Bearer ${token}`);
   let request = {
     method: 'DELETE',
-    headers: getDefaultHeaders()
+    headers: myHeaders
   };
 
   fetch(`${NOTIFIER_API_URL}/${graphSub.id}`, request)
@@ -196,7 +202,7 @@ function showErrorMessage(text) {
   }
 }
 
-function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
+async function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
   console.log('sendSubscriptionInfoToNotifierService');
   if (!pushSub) {
     pushSub = localStorage.getItem(PUSH_SUBSCRIPTION_KEY);
@@ -210,10 +216,17 @@ function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
   data.resource = graphSub.resource;
   data.expirationDateTime = graphSub.expirationDateTime;
 
+  let token = await getAuthToken();
+  if (!token) {
+    return;
+  }
+  let myHeaders = getDefaultHeaders();
+  myHeaders.append('Authorization', `Bearer ${token}`);
+
   let request = {
     method: 'POST',
     body: JSON.stringify(data),
-    headers: getDefaultHeaders()
+    headers: myHeaders
   };
 
   fetch(NOTIFIER_API_URL, request)
