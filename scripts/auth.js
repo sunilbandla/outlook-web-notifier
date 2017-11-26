@@ -116,7 +116,7 @@ function showWelcomeMessage() {
 function hideError() {
   let elem = document.getElementById('ErrorMessage');
   if (elem) {
-    elem.style.visibility = 'hidden';
+    elem.classList.add('is-invisible');
   }
 }
 
@@ -131,6 +131,7 @@ function showError(endpoint, error, errorDesc) {
   if (formattedError.length < 3) {
     formattedError = error;
   }
+  document.getElementById('ErrorMessage').classList.remove('is-invisible');
   document.getElementById('ErrorMessage').innerHTML =
     'An error has occurred:<br/>Endpoint: ' +
     endpoint +
