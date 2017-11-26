@@ -1,5 +1,5 @@
 /* global signIn, resetLoginCount, renewOrRecreateGraphSubscription, GRAPH_SUBSCRIPTION_KEY,
-  removeGraphSubscription, userAgentApplication, getMailInfo */
+  removeGraphSubscription, userAgentApplication, getMailInfo, hideError */
 /* eslint-env browser, es8 */
 
 'use strict';
@@ -161,6 +161,7 @@ function updatePushSubscriptionInStorage(subscription) {
 
 function unsubscribeUser() {
   document.getElementById('Spinner').classList.remove('is-invisible');
+  hideError();
   swRegistration.pushManager.getSubscription()
     .then(function(subscription) {
       if (subscription) {
