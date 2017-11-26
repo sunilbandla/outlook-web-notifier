@@ -5,7 +5,8 @@
   "scripts": {
     "lint": "eslint \".\"",
     "test": "npm run lint",
-    "start": "http-server app -o"
+    "start": "http-server app -o",
+    "deploy": "git subtree push --prefix app origin gh-pages"
   },
   "devDependencies": {
     "eslint": "^3.8.1",

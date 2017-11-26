@@ -24,7 +24,7 @@ let graphRenewalReminder;
 let graphSubscriptionRequestCount = 1;
 
 async function sendSubscriptionRequestToGraph() {
-  console.log('sendSubscriptionRequestToGraph');
+  console.debug('sendSubscriptionRequestToGraph');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (graphSub) {
     renewOrRecreateGraphSubscription();
@@ -67,7 +67,7 @@ async function sendSubscriptionRequestToGraph() {
         return;
       }
       graphSubscriptionRequestCount = 0;
-      console.log(subscription);
+      console.debug(subscription);
       localStorage.setItem(
         GRAPH_SUBSCRIPTION_KEY,
         JSON.stringify(subscription)
@@ -79,7 +79,7 @@ async function sendSubscriptionRequestToGraph() {
       }
       pushSub = JSON.parse(pushSub);
       subscription[PUSH_SUBSCRIPTION_KEY] = pushSub;
-      console.log(pushSub);
+      console.debug(pushSub);
       sendSubscriptionInfoToNotifierService(subscription, pushSub);
       setupGraphSubReminder();
     })
@@ -89,7 +89,8 @@ async function sendSubscriptionRequestToGraph() {
 }
 
 function renewOrRecreateGraphSubscription() {
-  console.log('renewOrRecreateGraphSubscription');
+  console.debug('renewOrRecreateGraphSubscription');
+  document.getElementById('Spinner').classList.remove('is-invisible');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (!graphSub) {
     sendSubscriptionRequestToGraph();
@@ -106,7 +107,7 @@ function renewOrRecreateGraphSubscription() {
 }
 
 async function removeGraphSubscription() {
-  console.log('removeGraphSubscription');
+  console.debug('removeGraphSubscription');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   if (!graphSub) {
     return;
@@ -129,7 +130,7 @@ async function removeGraphSubscription() {
   fetch(`${NOTIFIER_API_URL}/${graphSub.id}`, request)
     .then((response) => {
       if (response.ok) {
-        console.log('Subscriptions sent to notifier server - response status =', response.status);
+        console.debug('Subscriptions sent to notifier server - response status =', response.status);
         return localStorage.removeItem(GRAPH_SUBSCRIPTION_KEY);
       }
       throw new Error('Could not remove Graph subscription from notifier server');
@@ -140,7 +141,7 @@ async function removeGraphSubscription() {
 }
 
 async function renewGraphSubscription() {
-  console.log('renewGraphSubscription');
+  console.debug('renewGraphSubscription');
   let graphSub = localStorage.getItem(GRAPH_SUBSCRIPTION_KEY);
   graphSub = JSON.parse(graphSub);
 
@@ -169,13 +170,13 @@ async function renewGraphSubscription() {
       throw new Error('Could not renew Graph subscription server');
     })
     .then((subscription) => {
-      console.log(subscription);
+      console.debug(subscription);
       graphSub.expirationDateTime = subscription.expirationDateTime;
       localStorage.setItem(
         GRAPH_SUBSCRIPTION_KEY,
         JSON.stringify(graphSub)
       );
-      console.log(graphSub);
+      console.debug(graphSub);
       sendSubscriptionInfoToNotifierService(graphSub, null);
       setupGraphSubReminder();
     })
@@ -185,7 +186,7 @@ async function renewGraphSubscription() {
 }
 
 async function getAuthToken() {
-  console.log('getAuthToken');
+  console.debug('getAuthToken');
   let token = await getToken();
   if (!token) {
     showErrorMessage('Authentication error. Reload and/or try again later.');
@@ -203,7 +204,7 @@ function showErrorMessage(text) {
 }
 
 async function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
-  console.log('sendSubscriptionInfoToNotifierService');
+  console.debug('sendSubscriptionInfoToNotifierService');
   if (!pushSub) {
     pushSub = localStorage.getItem(PUSH_SUBSCRIPTION_KEY);
     pushSub = JSON.parse(pushSub);
@@ -233,7 +234,7 @@ async function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
     .then((response) => {
       if (response.ok) {
         subscriptionComplete('SubscriptionMessage');
-        return console.log('Subscriptions sent to server - response status =', response.status);
+        return console.debug('Subscriptions sent to server - response status =', response.status);
       }
       throw new Error('Subscriptions could not be saved on server.');
     })
@@ -243,7 +244,7 @@ async function sendSubscriptionInfoToNotifierService(graphSub, pushSub) {
 }
 
 async function getMailInfo(id) {
-  console.log('getMailInfo');
+  console.debug('getMailInfo');
   let token = await getAuthToken();
   if (!token) {
     return;
@@ -273,7 +274,7 @@ async function getMailInfo(id) {
 }
 
 function setupGraphSubReminder() {
-  console.log('setupGraphSubReminder');
+  console.debug('setupGraphSubReminder');
   if (graphRenewalReminder) {
     clearTimeout(graphRenewalReminder);
   }
@@ -297,6 +298,6 @@ function getNewExpirationTime() {
 }
 
 function subscriptionComplete(id) {
-  document.getElementById(id).classList.toggle('is-invisible');
-  document.getElementById('Spinner').classList.toggle('is-invisible');
+  document.getElementById(id).classList.remove('is-invisible');
+  document.getElementById('Spinner').classList.add('is-invisible');
 }
