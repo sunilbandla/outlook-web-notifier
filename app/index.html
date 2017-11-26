@@ -13,6 +13,7 @@
   <script defer src="https://code.getmdl.io/1.2.1/material.min.js"></script>
   <link rel="stylesheet" href="styles/index.css">
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="images/icon.png" type="image/x-icon" />
 </head>
 
 <body>
@@ -21,14 +22,15 @@
     <h1>Inbox Notifier</h1>
     <strong id="WelcomeMessage"></strong>
   </header>
-
   <main>
     <section class="content-container">
-      <br />
       <button disabled class="js-push-btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
         Enable Notifications
       </button>
-      <br />
+      <div id="Spinner">
+        <br /><br />
+        <div class="mdl-spinner mdl-js-spinner is-active"></div>
+      </div>
       <ul id="SubscriptionMessage" class="mdl-list is-invisible">
         <h4>You are now subscribed to:</h4>
         <li class="mdl-list__item">
@@ -42,9 +44,7 @@
           </span>
         </li>
       </ul>
-      <br />
-      <div id="ErrorMessage" class="mdl-color-text--red"></div>
-      <br />
+      <div id="ErrorMessage" class="mdl-color-text--red is-invisible"></div>
       <button onclick="restart()" class="js-push-btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
           Start over
         </button>

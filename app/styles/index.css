@@ -29,6 +29,10 @@ header>h1 {
   margin: 0 auto;
 }
 
+#SubscriptionMessage, #ErrorMessage {
+  margin: 15px 0;
+}
+
 #SubscriptionMessage {
   max-width: 300px;
   margin: 0 auto;
@@ -45,7 +49,7 @@ main {
 }
 
 .is-invisible {
-  opacity: 0;
+  display: none;
 }
 
 @media (max-width: 600px) {

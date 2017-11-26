@@ -197,7 +197,7 @@ async function getAuthToken() {
 function showErrorMessage(text) {
   let elem = document.getElementById('ErrorMessage');
   if (elem) {
-    elem.style.visibility = 'visible';
+    elem.classList.remove('is-invisible');
     elem.innerText = text;
   }
 }
@@ -298,4 +298,5 @@ function getNewExpirationTime() {
 
 function subscriptionComplete(id) {
   document.getElementById(id).classList.toggle('is-invisible');
+  document.getElementById('Spinner').classList.toggle('is-invisible');
 }
