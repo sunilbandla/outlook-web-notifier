@@ -32,14 +32,14 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
     window.parent !== window &&
     window.opener
   ) {
-    console.log('In auth frame');
+    console.debug('In auth frame');
     return;
   }
-  console.log('Service Worker and Push is supported');
+  console.debug('Service Worker and Push is supported');
 
   navigator.serviceWorker.register('sw.js')
     .then(function(swReg) {
-      console.log('Service Worker is registered', swReg);
+      console.debug('Service Worker is registered', swReg);
 
       swRegistration = swReg;
       initializeUI();
@@ -66,7 +66,7 @@ function enableNotificationsClickHandler() {
 function registerMessageHandler() {
   const swListener = new BroadcastChannel('swListener');
   swListener.onmessage = async (event) => {
-    console.log('Main thread received message', event, event.data);
+    console.debug('Main thread received message', event, event.data);
     if (event && event.data && event.data.method === 'getMailInfo') {
       let mailInfo = await getMailInfo(event.data.id);
       let data = Object.assign({}, event.data);
@@ -77,7 +77,7 @@ function registerMessageHandler() {
 }
 
 function sendMessageToServiceWorker(msg) {
-  console.log('sendMessageToServiceWorker', msg);
+  console.debug('sendMessageToServiceWorker', msg);
   navigator.serviceWorker.controller.postMessage(msg);
 }
 
@@ -88,7 +88,7 @@ function initializeUI() {
   swRegistration.pushManager.getSubscription()
     .then(subscriptionSuccess)
     .catch(() => {
-      console.log('Could not obtain push subscription. Reload or open app in a new tab.');
+      console.debug('Could not obtain push subscription. Reload or open app in a new tab.');
       subscribeUser();
     });
 }
@@ -111,8 +111,9 @@ function updateBtn() {
 }
 
 function subscribeUser() {
-  console.log('subscribeUser');
+  console.debug('subscribeUser');
   const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
+  document.getElementById('Spinner').classList.remove('is-invisible');
   swRegistration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: applicationServerKey
@@ -121,24 +122,24 @@ function subscribeUser() {
       signIn();
       subscriptionSuccess(subscription);
     }, (err) => {
-      console.log('Failed to subscribe the user: ', err);
+      console.debug('Failed to subscribe the user: ', err);
       updateBtn();
     })
     .catch(function(err) {
-      console.log('Failed to subscribe the user: ', err);
+      console.debug('Failed to subscribe the user: ', err);
       updateBtn();
     });
 }
 
 function subscriptionSuccess(subscription) {
-  console.log('subscriptionSuccess', subscription);
+  console.debug('subscriptionSuccess', subscription);
 
   isSubscribed = !(subscription === null);
 
   if (isSubscribed) {
-    console.log('User IS subscribed.');
+    console.debug('User IS subscribed.');
   } else {
-    console.log('User is NOT subscribed.');
+    console.debug('User is NOT subscribed.');
   }
 
   updateBtn();
@@ -148,7 +149,7 @@ function subscriptionSuccess(subscription) {
 }
 
 function updatePushSubscriptionInStorage(subscription) {
-  console.log('updatePushSubscriptionInStorage');
+  console.debug('updatePushSubscriptionInStorage');
 
   if (subscription) {
     localStorage.setItem(PUSH_SUBSCRIPTION_KEY, JSON.stringify(subscription));
@@ -158,16 +159,8 @@ function updatePushSubscriptionInStorage(subscription) {
   }
 }
 
-function restart() {
-  removeGraphSubscription();
-  localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
-  localStorage.removeItem(GRAPH_SUBSCRIPTION_KEY);
-  unsubscribeUser();
-  updateBtn();
-  resetLoginCount();
-}
-
 function unsubscribeUser() {
+  document.getElementById('Spinner').classList.remove('is-invisible');
   swRegistration.pushManager.getSubscription()
     .then(function(subscription) {
       if (subscription) {
@@ -175,16 +168,19 @@ function unsubscribeUser() {
       }
     })
     .catch(function(error) {
-      console.log('Error unsubscribing', error);
+      console.debug('Error unsubscribing', error);
     })
     .then(function() {
       updatePushSubscriptionInStorage(null);
       removeGraphSubscription();
 
-      console.log('User is unsubscribed.');
+      console.debug('User is unsubscribed.');
       isSubscribed = false;
 
       updateBtn();
+      resetLoginCount();
+      document.getElementById('SubscriptionMessage').classList.add('is-invisible');
+      document.getElementById('Spinner').classList.add('is-invisible');
       // TODO
       // signOut();
     });

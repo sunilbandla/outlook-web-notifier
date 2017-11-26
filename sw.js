@@ -2,7 +2,7 @@
 
 'use strict';
 self.addEventListener('push', async (event) => {
-  console.log(
+  console.debug(
     `[Service Worker] Push received with this data: "${event.data.text()}"`
   );
 
@@ -24,7 +24,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 self.addEventListener('message', async (event) => {
-  console.log('SW received message: ', event.data);
+  console.debug('SW received message: ', event.data);
 
   let message = 'You\'ve got mail.';
   let subject = 'Outlook web notification';

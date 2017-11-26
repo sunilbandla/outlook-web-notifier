@@ -27,7 +27,7 @@
       <button disabled class="js-push-btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
         Enable Notifications
       </button>
-      <div id="Spinner">
+      <div id="Spinner" class="is-invisible">
         <br /><br />
         <div class="mdl-spinner mdl-js-spinner is-active"></div>
       </div>
@@ -45,15 +45,12 @@
         </li>
       </ul>
       <div id="ErrorMessage" class="mdl-color-text--red is-invisible"></div>
-      <button onclick="restart()" class="js-push-btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-          Start over
-        </button>
-      </section>
+    </section>
   </main>
 
   <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.1.3/js/msal.min.js"></script>
   <script src="scripts/main.js"></script>
-  <script src="scripts/graphService.js"></script>
+  <script async defer src="scripts/graphService.js"></script>
   <script src="scripts/auth.js"></script>
 
 </body>

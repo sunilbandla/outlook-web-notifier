@@ -32,7 +32,7 @@ window.onload = function() {
   ) {
     let user = userAgentApplication.getUser();
     if (user) {
-      console.log('onload');
+      console.debug('onload');
       getToken();
     }
   }
@@ -42,7 +42,7 @@ window.onload = function() {
  * Call the Microsoft Graph API and display the results on the page. Sign the user in if necessary
  */
 function signIn() {
-  console.log('signIn');
+  console.debug('signIn');
   let user = userAgentApplication.getUser();
   if (!user) {
     // If user is not signed in, then prompt user to sign in via loginRedirect.
@@ -63,11 +63,11 @@ function signIn() {
 }
 
 function getToken() {
-  console.log('getToken');
+  console.debug('getToken');
   return userAgentApplication
     .acquireTokenSilent(graphAPIScopes)
     .then(loginSuccess, (error) => {
-      console.log('acquireTokenSilent failed', error);
+      console.debug('acquireTokenSilent failed', error);
       if (error) {
         let count = Number.parseInt(localStorage.getItem(LOGIN_COUNT_KEY) || 0);
         if (count === 0) {
@@ -87,7 +87,7 @@ function getToken() {
  *  For acquireTokenRedirect, tokenType:"access_token".
  */
 function loginCallback(errorDesc, token, error, tokenType) {
-  console.log('loginCallback');
+  console.debug('loginCallback');
   if (errorDesc) {
     console.error('error: ' + errorDesc);
     showError(window.msal.authority, error, errorDesc);
@@ -97,7 +97,7 @@ function loginCallback(errorDesc, token, error, tokenType) {
 }
 
 function loginSuccess(token) {
-  console.log('loginSuccess', token);
+  console.debug('loginSuccess');
   resetLoginCount();
   hideError();
   showWelcomeMessage();
