@@ -4,9 +4,14 @@
 'use strict';
 
 let LOGIN_COUNT_KEY = 'loginCount';
+let PROD_REDIRECT_URI = 'https://sunilbandla.github.io/outlook-web-notifier';
+let redirectUri = location.origin;
+if (location.hostname !== '127.0.0.1') {
+  redirectUri = PROD_REDIRECT_URI;
+}
 let msalconfig = {
   clientID: 'fac25078-e844-4720-a161-a6331ffd8119',
-  redirectUri: location.origin
+  redirectUri
 };
 
 // Initialize application
