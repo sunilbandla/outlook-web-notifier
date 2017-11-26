@@ -29,6 +29,16 @@ header>h1 {
   margin: 0 auto;
 }
 
+#Subtitle {
+  margin: 30px auto;
+  width: 70vw;
+}
+
+#WelcomeMessage {
+  margin-right: 30px;
+  float: right;
+}
+
 #SubscriptionMessage, #ErrorMessage {
   margin: 15px 0;
 }
