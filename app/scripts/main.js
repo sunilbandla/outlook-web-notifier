@@ -68,9 +68,9 @@ function registerMessageHandler() {
   swListener.onmessage = async (event) => {
     console.debug('Main thread received message', event, event.data);
     if (event && event.data && event.data.method === 'getMailInfo') {
-      let mailInfo = await getMailInfo(event.data.id);
+      // let mailInfo = await getMailInfo(event.data.id);
       let data = Object.assign({}, event.data);
-      data.mailInfo = mailInfo;
+      // data.mailInfo = mailInfo;
       sendMessageToServiceWorker(data);
     }
   };

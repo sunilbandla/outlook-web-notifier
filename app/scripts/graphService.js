@@ -8,7 +8,7 @@ const GRAPH_URL = `${GRAPH_ROOT_URL}/subscriptions/`;
 const NOTIFIER_API_URL = 'https://outlookwebnotifier.azurewebsites.net/api/subscribe';
 const graphAPIScopes = [
   'https://graph.microsoft.com/user.read',
-  'https://graph.microsoft.com/mail.read'
+  // 'https://graph.microsoft.com/mail.read'
 ];
 
 let inboxSubscriptionRequest = {
