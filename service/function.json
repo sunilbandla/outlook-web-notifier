@@ -1,0 +1,33 @@
+{
+  "bindings": [
+    {
+      "type": "httpTrigger",
+      "authLevel": "anonymous",
+      "direction": "in",
+      "name": "req",
+      "route": "subscribe/{subscriptionId?}",
+      "methods": ["post", "delete", "options"]
+    },
+    {
+      "type": "http",
+      "name": "res",
+      "direction": "out"
+    },
+    {
+      "type": "table",
+      "name": "storageTable",
+      "tableName": "subscriptions",
+      "connection": "outlookwebnotifier_STORAGE",
+      "direction": "out"
+    },
+    {
+      "type": "table",
+      "name": "inputStorageTable",
+      "tableName": "subscriptions",
+      "take": 50,
+      "connection": "outlookwebnotifier_STORAGE",
+      "direction": "in"
+    }
+  ],
+  "disabled": false
+}
